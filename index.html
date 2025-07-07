@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Ninja</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7));
+            padding: 20px;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        h1 {
+            font-size: 4em;
+            margin-bottom: 40px;
+            text-align: center;
+            color: #4CAF50;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .mode-container {
+            display: flex;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .mode-card {
+            background: rgba(76, 175, 80, 0.1);
+            border: 2px solid #4CAF50;
+            border-radius: 10px;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .mode-card:hover {
+            transform: scale(1.05);
+            background: rgba(76, 175, 80, 0.2);
+        }
+
+        .mode-card h2 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .mode-card p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            margin: 10px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+            background-color: #45a049;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: transform 0.2s, background-color 0.2s;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            transform: translateX(-50%) scale(1.1);
+            background-color: #45a049;
+        }
+
+        .instructions {
+            max-width: 800px;
+            text-align: center;
+            line-height: 1.6;
+            margin: 20px;
+            font-size: 1.2em;
+        }
+
+        #gameCanvas {
+            border: 2px solid #4CAF50;
+            background-color: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+        }
+
+        .game-stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 20px;
+            font-size: 1.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .score {
+            color: #4CAF50;
+        }
+
+        .timer {
+            color: #ffd700;
+        }
+
+        .hearts {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        #gameover h1 {
+            color: #ff0000;
+        }
+
+        .audio-control {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            cursor: pointer;
+            font-size: 2em;
+            color: #4CAF50;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s;
+        }
+
+        .audio-control:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body>
+    <audio id="backgroundMusic" loop autoplay>
+        <source src="beats.mp3" type="audio/mpeg">
+    </audio>
+    <div class="audio-control" onclick="toggleMusic()">
+        <i id="audioIcon" class="fas fa-volume-up"></i>
+    </div>
+    <div id="home" class="page active">
+        <h1>Eco Ninja</h1>
+        <button class="btn" onclick="showPage('instructions')">Get Started</button>
+    </div>
+    <div id="instructions" class="page">
+        <h1>How to Play</h1>
+        <div class="instructions">
+            <p>Click eco-friendly emojis to score points! 🌱</p>
+            <p>Avoid clicking harmful items or lose hearts! ⚠️</p>
+            <p>Lose all hearts and it's game over! ❤️</p>
+        </div>
+        <button class="btn" onclick="showPage('mode-select')">Continue</button>
+    </div>
+    <div id="mode-select" class="page">
+        <h1>Select Mode</h1>
+        <div class="mode-container">
+            <div class="mode-card" onclick="startGameMode('endless')">
+                <h2>Endless Mode</h2>
+                <p>Play without time pressure</p>
+                <p>Focus on accuracy</p>
+                <p>Beat your high score!</p>
+            </div>
+            <div class="mode-card" onclick="startGameMode('timed')">
+                <h2>Time Trial</h2>
+                <p>60 seconds challenge</p>
+                <p>Race against time</p>
+                <p>Fast-paced action!</p>
+            </div>
+        </div>
+    </div>
+    <div id="game" class="page">
+        <button class="back-btn" onclick="confirmExit()">Back to Modes</button>
+        <div class="game-stats">
+            <div class="score">Score: <span id="scoreValue">0</span></div>
+            <div class="timer" id="timerDisplay">Time: <span id="timeValue">60</span>s</div>
+        </div>
+        <div class="hearts">
+            <span id="heart1">❤️</span>
+            <span id="heart2">❤️</span>
+            <span id="heart3">❤️</span>
+        </div>
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    <div id="gameover" class="page">
+        <h1>Game Over</h1>
+        <p class="instructions">Final Score: <span id="finalScore">0</span></p>
+        <button class="btn" onclick="showPage('mode-select')">Choose Mode</button>
+        <button class="btn" onclick="showPage('home')">Home</button>
+    </div>
+    <script>
+        let currentScore = 0;
+        let hearts = 3;
+        let gameLoop;
+        let emojis = [];
+        let timeRemaining = 60;
+        let timerInterval;
+        let currentGameMode = '';
+        let isMusicOn = true;
+        const ecoFriendlyEmojis = ['🌱', '🌳', '🌺', '♻️', '🚲', '🌞', '🔋'];
+        const harmfulEmojis = ['🚗', '🏭', '🛢️', '🔥', '⛽', '📳'];
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+
+        function confirmExit() {
+            if (confirm('Are you sure you want to exit? Your progress will be lost!')) {
+                showPage('mode-select');
+            }
+        }
+
+        window.addEventListener('load', () => {
+            backgroundMusic.volume = 0.3;
+            const playPromise = backgroundMusic.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    document.addEventListener('click', function initAudio() {
+                        backgroundMusic.play();
+                        document.removeEventListener('click', initAudio);
+                    }, { once: true });
+                });
+            }
+        });
+        function toggleMusic() {
+            isMusicOn = !isMusicOn;
+            const audioIcon = document.getElementById('audioIcon');
+            if (isMusicOn) {
+                audioIcon.className = 'fas fa-volume-up';
+                backgroundMusic.play();
+            } else {
+                audioIcon.className = 'fas fa-volume-mute';
+                backgroundMusic.pause();
+            }
+        }
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+            if (pageId === 'game') {
+                startGame();
+            } else {
+                if (gameLoop) clearInterval(gameLoop);
+                if (timerInterval) clearInterval(timerInterval);
+            }
+        }
+        function startGameMode(mode) {
+            currentGameMode = mode;
+            const timerDisplay = document.getElementById('timerDisplay');
+            timerDisplay.style.display = mode === 'timed' ? 'block' : 'none';
+            showPage('game');
+        }
+        function resizeCanvas() {
+            canvas.width = window.innerWidth * 0.8;
+            canvas.height = window.innerHeight * 0.8;
+        }
+        function startGame() {
+            resizeCanvas();
+            currentScore = 0;
+            hearts = 3;
+            timeRemaining = 60;
+            emojis = [];
+            updateScore();
+            updateHearts();
+            if (gameLoop) clearInterval(gameLoop);
+            if (timerInterval) clearInterval(timerInterval);
+            gameLoop = setInterval(gameUpdate, 50);
+            if (currentGameMode === 'timed') {
+                updateTimer();
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+            spawnEmoji();
+        }
+        function updateTimer() {
+            timeRemaining--;
+            document.getElementById('timeValue').textContent = timeRemaining;
+            if (timeRemaining <= 0) {
+                gameOver();
+            }
+        }
+        function spawnEmoji() {
+            if (hearts <= 0 || (currentGameMode === 'timed' && timeRemaining <= 0)) return;
+            const isEcoFriendly = Math.random() > 0.4;
+            const emoji = {
+                symbol: isEcoFriendly ?
+                    ecoFriendlyEmojis[Math.floor(Math.random() * ecoFriendlyEmojis.length)] :
+                    harmfulEmojis[Math.floor(Math.random() * harmfulEmojis.length)],
+                x: Math.random() * (canvas.width - 40),
+                y: canvas.height,
+                speed: 3 + Math.random() * 2,
+                isEcoFriendly: isEcoFriendly,
+                goingUp: true,
+                turnPoint: canvas.height * 0.2 + Math.random() * (canvas.height * 0.2)
+            };
+            emojis.push(emoji);
+            setTimeout(spawnEmoji, 600 + Math.random() * 800);
+        }
+        function gameUpdate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            emojis = emojis.filter(emoji => {
+                if (emoji.goingUp) {
+                    emoji.y -= emoji.speed;
+                    if (emoji.y <= emoji.turnPoint) {
+                        emoji.goingUp = false;
+                        emoji.speed = emoji.speed * 1.5;
+                    }
+                } else {
+                    emoji.y += emoji.speed;
+                }
+                if (!emoji.goingUp && emoji.y > canvas.height + 40) {
+                    return false;
+                }
+                ctx.font = '40px Arial';
+                ctx.fillText(emoji.symbol, emoji.x, emoji.y);
+                return true;
+            });
+        }
+        canvas.addEventListener('click', (e) => {
+            if ((currentGameMode === 'timed' && timeRemaining <= 0) || hearts <= 0) return;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            emojis.forEach((emoji, index) => {
+                const distance = Math.sqrt(
+                    Math.pow(clickX - emoji.x, 2) +
+                    Math.pow(clickY - emoji.y, 2)
+                );
+                if (distance < 30) {
+                    if (emoji.isEcoFriendly) {
+                        currentScore += 10;
+                        updateScore();
+                    } else {
+                        hearts--;
+                        updateHearts();
+                        if (hearts <= 0) {
+                            gameOver();
+                        }
+                    }
+                    emojis.splice(index, 1);
+                }
+            });
+        });
+        function updateScore() {
+            document.getElementById('scoreValue').textContent = currentScore;
+        }
+        function updateHearts() {
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById(`heart${i}`).style.opacity =
+                    i <= hearts ? '1' : '0.2';
+            }
+        }
+        function gameOver() {
+            clearInterval(gameLoop);
+            clearInterval(timerInterval);
+            document.getElementById('finalScore').textContent = currentScore;
+            showPage('gameover');
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+    </script>
+</body>
+
+</html>
